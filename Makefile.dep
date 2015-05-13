@@ -1,0 +1,13 @@
+objs/rsa_context.o: rsa_context.cc rsa_context.hh
+
+rsa_context.hh:
+objs/rsa_context_rns.o: rsa_context_rns.cc rsa_context_rns.hh rsa_context.hh \
+  rsa_cuda.h bn_kn.h
+
+rsa_context_rns.hh:
+
+rsa_context.hh:
+
+rsa_cuda.h:
+
+bn_kn.h:

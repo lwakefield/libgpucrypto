@@ -1,0 +1,10 @@
+# only first 4 lines are effective
+branch
+divergent_branch
+instructions
+warp_serialize
+cta_launched
+gld_incoherent
+gld_coherent
+gst_incoherent
+gst_coherent

@@ -1,0 +1,42 @@
+#modify directory configuration below to match your configuration \
+ if you want use system default openssl-dev installation then comment out the OPENSSL_DIR line
+OPENSSL_DIR = /usr/local/ssl
+CUDA_TOOLKIT_DIR = /usr/local/cuda
+CUDA_SDK_DIR = /home/$(USER)/NVIDIA_GPU_Computing_SDK
+
+#openssl config
+ifneq ($(OPENSSL_DIR), )
+	OPENSSL_LIBDIR = -L$(OPENSSL_DIR)/lib64
+	OPENSSL_INCDIR = -I$(OPENSSL_DIR)/include
+endif
+OPENSSL_LIB = -lcrypto
+
+#generic config
+CC = g++
+CFLAGS = -O2 -g -Wall
+INC = $(OPENSSL_INCDIR)
+
+#CUDA related config
+NVCC = nvcc
+NVCFLAGS= --ptxas-options=-v -O2 --use_fast_math
+NVINC = -I/usr/local/cuda/include -I$(CUDA_SDK_DIR)/C/common/inc
+
+CUDA_LIBDIR = -L$(CUDA_TOOLKIT_DIR)/lib64  -L$(CUDA_SDK_DIR)/C/lib
+CUDA_LIBS = -lcudart
+
+#below lines automatically detects the fermi devices using lspci command
+#if any CUDA device that supports architecture 2.x is detected,
+#then it enables use of 64-bit integer for RSA and generate compute_20 code.
+#you can manually set IS_FERMI value below if it does not automatically detect your fermi device.
+#read FERMI_DEVICES file for supported cards list.
+CUDA_DEVICE_IDS = $(shell cat $(GPUCRYPTO_DIR)FERMI_DEVICES | sed "s/^.*0x//g" | awk '{print "10de:"$$1}')
+IS_FERMI = $(foreach DEVID, $(CUDA_DEVICE_IDS), $(shell lspci -nn | grep -q $(DEVID) && echo "1"))
+
+ifneq (,$(findstring 1,$(IS_FERMI)))
+	NVCFLAGS += -DMP_USE_64BIT=1 -gencode arch=compute_20,code=sm_20
+	CFLAGS += -DMP_USE_64BIT=1
+else
+	NVCFLAGS += -DMP_USE_64BIT=0 -gencode arch=compute_12,code=sm_12
+	CFLAGS += -DMP_USE_64BIT=0
+endif
+

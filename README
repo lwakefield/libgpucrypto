@@ -1,0 +1,117 @@
+GENERAL
+=======
+libgpucrypto is subset of SSLShader software that implements
+few cryptographic algorithms: AES, SHA1, RSA using CUDA.
+This code is distributed under BSD-style license.
+Read LICENSE for more details.
+
+It requires CUDA 1.2 or above capable devices.
+We have tested our code on GTX285, GTX480, and GTX580.
+
+Below is the machine specification we used for the test.
+
+CPU: Intel X5650 2.66Ghz x 2
+M/B: Super Micro X8DAH
+RAM: DDR3 4GB x 6
+
+libgpucrypto is developed under Linux environment,
+and it is dependent on CUDA and OpenSSL.
+We have tesed our code on CUDA 3.2 and 4.0
+along with OpenSSL 1.0.0 (Mar 29, 2010).
+Below, we list versions of software that we have tested.
+
+* CUDA 4.0
+CUDA driver  : 270.41.19
+CUDA toolkit : 4.0.17
+CUDA SDK     : 4.0.17
+
+* CUDA 3.2
+CUDA driver  : 260.19.26
+CUDA toolkit : 3.2.16
+CUDA SDK     : 3.2.16
+
+* O/S
+Ubuntu 10.04 LTS 64bit
+
+We never tested our code on other Linux distributions nor 32 bit systems.
+Please do not ask for help on distribution specific issues.
+
+
+SETUP
+=====
+
+1) install required libraries
+ you can download CUDA stuff at
+ http://developer.nvidia.com/cuda-toolkit-40
+
+2) install OpenSSL libraries and headers
+ you can download OpenSSL at
+ http://openssl.org/source/
+
+3) configure following variables in Makefile.in
+ OPENSSL_DIR
+ CUDA_TOOLKIT_DIR
+ CUDA_SDK_DIR
+
+if you're using system default opeenssl development library,
+then you can leave it as blank.
+
+4) build libgpucrypto
+ make
+
+5) try running test code
+
+examples)
+#./bin/aes_test -m ENC
+#./bin/rsa_test -m MP
+#./bin/sha_test
+
+you can see more detailed usage by running program w/o arguments or w/ incorrect one :).
+
+
+HOW TO USE
+==========
+Please see test folder for example codes that uses libgpucrypto.
+Using this code requires some prior knowledge on CUDA programming and
+GPU codes are written in a way to optimize performance rather than usability,
+and the data structure it's API receives is quite complex to document.
+Please see below functions and codes for how to use GPU library.
+
+RSA: rsa_test.cc: test_latency_rsa
+AES: aes_test.cc: test_latency_ase_cbc_encrypt, test_latency_aes_cbc_decrypt
+SHA1: sha_test.cc: test_latency_hmac_sha1
+
+AES and SHA1 test codes have a function to transform
+somewhat human friendly data structure to GPU code's structure.
+See aes_cbc_encrypt_prepare, aes_cbc_decrypt_prepare, and hmac_sha1_prepare
+to better understand the exact data structure used for GPU code.
+
+
+NOTE
+====
+* Support for multi-threaded applications
+Sharing a device context between threads does not work
+CUDA 3.2 or earlier versions.
+CUDA 4.0 supports sharing GPU context among multiple threads,
+but we have not tested this capability with our code.
+
+* 64-bit native integer arithmetic for RSA
+RSA codes exploits 64-bit native integer support in CUDA 2.x devices.
+Use of 64-bit native integer or not is decided during build process.
+If you have CUDA 2.x device, and our codes does not utilize it correctly,
+then you may fix it by modifying IS_FERMI variable in Makefile.in file.
+
+* Alignment issue
+AES and SHA1 GPU codes can handle non multiple of 16 bytes data,
+however input data should be aligned before passed into GPU.
+The current test code that we provide do not deal with it,
+and will not work correctly if you try non-multiple of 16 bytes.
+
+
+CONTACTS
+========
+More information about the project is available at 
+http://shader.kaist.edu/sslshader
+
+If you have trouble using the library
+please contact us at tengig@an.kaist.ac.kr.
